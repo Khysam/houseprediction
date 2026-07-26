@@ -2,8 +2,10 @@
 Aplikasi Streamlit — Prediksi & Rekomendasi Harga Rumah Tebet, Jakarta Selatan.
 
 Menu:
-1. Prediksi Harga  -> user isi spesifikasi rumah, model mengembalikan estimasi harga.
-2. Rekomendasi Rumah -> user isi budget & kriteria, aplikasi menampilkan rumah yang cocok
+0. Beranda           -> deskripsi lengkap website: apa yang bisa dilakukan, tentang
+   dataset, tentang model, dan disclaimer.
+1. Prediksi Harga     -> user isi spesifikasi rumah, model mengembalikan estimasi harga.
+2. Rekomendasi Rumah  -> user isi budget & kriteria, aplikasi menampilkan rumah yang cocok
    dari dataset, lengkap dengan estimasi harga wajar model & indikator "good deal".
 """
 import pathlib
@@ -82,7 +84,7 @@ def format_rupiah(nilai):
 st.sidebar.title("🏠 Menu")
 menu = st.sidebar.radio(
     "Pilih halaman",
-    ["Prediksi Harga", "Rekomendasi Rumah"],
+    ["Beranda", "Prediksi Harga", "Rekomendasi Rumah"],
 )
 
 st.sidebar.markdown("---")
@@ -92,9 +94,105 @@ st.sidebar.caption(
 )
 
 # ===========================================================================
+# MENU 0 — BERANDA / TENTANG APLIKASI
+# ===========================================================================
+if menu == "Beranda":
+    st.title("🏠 Prediksi & Rekomendasi Harga Rumah Tebet, Jakarta Selatan")
+    st.write(
+        "Website ini membantu kamu memperkirakan **harga wajar rumah** di kawasan "
+        "Tebet, Jakarta Selatan, sekaligus mencari **rekomendasi rumah** yang sesuai "
+        "dengan budget dan kebutuhanmu — dibangun dari data listing rumah nyata di "
+        "kawasan tersebut menggunakan model *machine learning*."
+    )
+
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("🔮 Menu Prediksi Harga")
+        st.write(
+            "Masukkan spesifikasi rumah yang kamu maksud — luas bangunan, luas tanah, "
+            "jumlah kamar tidur, kamar mandi, kapasitas garasi, dan kelurahan — lalu "
+            "sistem akan memberi **estimasi harga wajar** berdasarkan pola harga rumah "
+            "sejenis di dataset. Cocok dipakai untuk mengecek apakah harga jual/beli "
+            "yang kamu dengar sudah wajar atau tidak, lengkap dengan daftar rumah "
+            "pembanding dengan spesifikasi mirip."
+        )
+    with col2:
+        st.subheader("🔍 Menu Rekomendasi Rumah")
+        st.write(
+            "Tentukan budget maksimal dan kriteria yang kamu inginkan (minimal kamar "
+            "tidur/mandi, kapasitas garasi, kelurahan tertentu), sistem akan menyaring "
+            "rumah dari dataset yang paling sesuai — dan menandai rumah mana yang "
+            "**harga jualnya lebih murah dari estimasi wajar model** (potensi "
+            "*good deal*), sehingga kamu bisa memprioritaskan rumah yang paling "
+            "menguntungkan untuk ditindaklanjuti."
+        )
+
+    st.markdown("---")
+
+    st.subheader("📊 Tentang Dataset")
+    st.write(
+        f"Model dilatih dari **{len(df)} data listing rumah** di kawasan Kecamatan "
+        "Tebet, Jakarta Selatan, yang sudah dibersihkan dari data duplikat dan "
+        "listing dengan harga ekstrem (outlier) supaya estimasi lebih realistis untuk "
+        "rentang harga rumah pada umumnya di kawasan tersebut. Setiap listing memuat "
+        "informasi:"
+    )
+    st.markdown(
+        """
+| Kolom | Keterangan |
+|---|---|
+| **Harga** | Harga jual rumah (Rp) |
+| **LB** | Luas Bangunan (m²) |
+| **LT** | Luas Tanah (m²) |
+| **KT** | Jumlah Kamar Tidur |
+| **KM** | Jumlah Kamar Mandi |
+| **GRS** | Kapasitas garasi (jumlah mobil) |
+| **Kelurahan** | Lokasi rumah (Tebet Timur, Tebet Barat, Kebon Baru, Bukit Duri, Menteng Dalam, atau "Tidak Diketahui" bila tidak disebutkan pada judul iklan) |
+"""
+    )
+
+    st.subheader("⚙️ Tentang Model")
+    st.write(
+        "Estimasi harga dihasilkan oleh model **Decision Tree Regressor** yang dipilih "
+        "setelah dibandingkan dengan 7 algoritma regresi lain (Linear Regression, "
+        "Ridge, Lasso, Random Forest, Extra Trees, Gradient Boosting, dan "
+        "K-Nearest Neighbors) — Decision Tree dipilih karena memberikan keseimbangan "
+        "terbaik antara akurasi pada data uji dan ketahanan terhadap *overfitting*. "
+        "Beberapa detail teknis:"
+    )
+    st.markdown(
+        """
+- Target harga dilatih dalam **skala logaritma** karena distribusi harga rumah
+  sangat miring ke kanan (banyak rumah harga menengah, sedikit rumah harga sangat tinggi).
+- Fitur numerik (`LB`, `LT`, `KT`, `KM`, `GRS`) di-*scaling* agar semua fitur
+  diperlakukan adil oleh model.
+- Fitur `Kelurahan` di-*encode* menggunakan One-Hot Encoding.
+- Performa model pada data uji: **R² ≈ 0,73** — artinya model bisa menjelaskan
+  sekitar 73% variasi harga rumah berdasarkan fitur-fitur di atas.
+"""
+    )
+
+    st.info(
+        "⚠️ **Disclaimer:** Estimasi harga pada website ini adalah **perkiraan "
+        "statistik**, bukan penilaian resmi (appraisal). Faktor seperti kondisi "
+        "fisik bangunan, legalitas/sertifikat, umur bangunan, arah hadap, dan "
+        "kondisi pasar terkini tidak diperhitungkan oleh model. Gunakan hasil "
+        "estimasi ini sebagai salah satu bahan pertimbangan, bukan acuan tunggal, "
+        "dalam mengambil keputusan jual-beli rumah."
+    )
+
+    st.markdown("---")
+    st.caption(
+        "Dibuat menggunakan Python, scikit-learn, dan Streamlit. "
+        "Silakan pilih menu di sidebar kiri untuk mulai menggunakan aplikasi."
+    )
+
+# ===========================================================================
 # MENU 1 — PREDIKSI HARGA
 # ===========================================================================
-if menu == "Prediksi Harga":
+elif menu == "Prediksi Harga":
     st.title("🔮 Prediksi Harga Rumah")
     st.write(
         "Masukkan spesifikasi rumah di bawah ini untuk mendapatkan estimasi "
